@@ -4,6 +4,9 @@ from threading import Lock
 from roller import HistogramRoller, ROLLER_REGISTRY
 
 
+# In seconds
+DEFAULT_UPDATE_FREQUENCY = 5
+
 class PrometheusRollingMetricsUpdater(threading.Thread):
     """Track a list of rolling objects, updating values every 'max_update_frequency' seconds
     """
@@ -11,7 +14,7 @@ class PrometheusRollingMetricsUpdater(threading.Thread):
         super(PrometheusRollingMetricsUpdater, self).__init__()
         self.rollers = []
         self._lock = Lock()
-        self.update_period = max_update_frequency or 5
+        self.update_period = max_update_frequency or DEFAULT_UPDATE_FREQUENCY
 
     def add(self, roller):
         with self._lock:
@@ -31,13 +34,13 @@ class PrometheusRollingMetricsUpdater(threading.Thread):
             with self._lock:
                 for roller in self.rollers:
                     roller.collect()
+
+            # FIXME: Sleep until time of next update instead of fixed period
             time.sleep(self.update_period)
 
 
 def start_update_daemon(updater=None, max_update_frequency=None, roller_registry=ROLLER_REGISTRY):
     """Start updating rolled metrics in daemon thread
-
-    By default find all metrics that end in _roller and manage those
     """
     if updater is None:
         updater = PrometheusRollingMetricsUpdater(max_update_frequency)

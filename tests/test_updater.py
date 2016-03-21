@@ -9,7 +9,6 @@ class TestRollingUpdater(unittest.TestCase):
         self.registry = CollectorRegistry()
         self.roller_registry = {}
 
-
     def test_initialize(self):
         h_a = Histogram('test_value_a', 'Testing roller a', registry=self.registry)
         h_b = Histogram('test_value_b', 'Testing roller b', registry=self.registry)
