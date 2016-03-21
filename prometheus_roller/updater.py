@@ -47,14 +47,14 @@ class PrometheusRollingMetricsUpdater(threading.Thread):
 
     def run(self):
         while True:
-            # Sleep until next period
-            time.sleep(self.wait_period - time.time() % self.wait_period)
-
             now_second = int(time.time())
             with self._lock:
                 for roller in self.rollers:
                     if now_second % roller.update_seconds == 0:
                         roller.collect()
+
+            # Sleep until next period
+            time.sleep(self.wait_period - time.time() % self.wait_period)
 
 
 def start_update_daemon(updater=None, roller_registry=ROLLER_REGISTRY):
