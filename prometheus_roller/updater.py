@@ -48,7 +48,7 @@ class PrometheusRollingMetricsUpdater(threading.Thread):
     def run(self):
         while True:
             # Sleep until next period
-            time.sleep(time.time() % self.wait_period)
+            time.sleep(self.wait_period - time.time() % self.wait_period)
 
             now_second = int(time.time())
             with self._lock:
