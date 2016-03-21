@@ -147,6 +147,9 @@ class CounterRoller(RollerBase):
     """
     def __init__(self, counter, options={}, registry=REGISTRY, roller_registry=ROLLER_REGISTRY):
         self.counter = counter
+        if self.counter._type != 'counter':
+            raise ValueError('Only a Counter object should be passed to CounterRoller')
+
         self.extract_options(options)
 
         # Keys are 'le' values
@@ -191,6 +194,9 @@ class HistogramRoller(RollerBase):
     """
     def __init__(self, histogram, options={}, registry=REGISTRY, roller_registry=ROLLER_REGISTRY):
         self.hist = histogram
+        if self.hist._type != 'histogram':
+            raise ValueError('Only a Histogram object should be passed to HistogramRoller')
+
         self.extract_options(options)
 
         # Keys are 'le' values
