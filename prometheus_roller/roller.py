@@ -107,14 +107,11 @@ REDUCERS = {
 DEFAULT_UPDATE_PERIOD = 5           # every 5 seconds
 DEFAULT_RETENTION_PERIOD = 5*60     # last 5 minutes
 
-class HistogramRoller(object):
-    """Accepts a Histogram object and creates gauges tracking metrics over a given time period for that bucket.
+
+class RollerBase(object):
+    """Base class used by CounterRoller and HistogramRoller
     """
-    def __init__(self, histogram, options={}, registry=REGISTRY, roller_registry=ROLLER_REGISTRY):
-        self.hist = histogram
-
-        # Extract options
-
+    def extract_options(self, options):
         # Name and documentation are generated if not passed
         self.name = options.get('name')
         self.documentation = options.get('documentation')
@@ -135,19 +132,76 @@ class HistogramRoller(object):
         else:
             self.reducer = REDUCERS[self.reducer_choice]
 
+    def configure_with_full_name(self, full_name, is_histogram=False):
+        """The full_name is the name used by the samples for each metric
+        """
+        # Trim off '_bucket'
+        trimmed_name = full_name[:-7] if is_histogram else full_name
+        generated_name = trimmed_name + '_%s_rolled' % (self.reducer_choice)
+        self.name = self.name or generated_name
+        self.documentation = self.documentation or 'Tracks the recent behavior of %s' % (trimmed_name)
+
+
+class CounterRoller(RollerBase):
+    """Accepts a Counter object and creates a gauge tracking its value over a given time period.
+    """
+    def __init__(self, counter, options={}, registry=REGISTRY, roller_registry=ROLLER_REGISTRY):
+        self.counter = counter
+        self.extract_options(options)
+
+        # Keys are 'le' values
+        # Holds deques containing values for each gauge
+        self.past_values = deque()
+        full_name, labels, value = self.get_sample()
+        self.configure_with_full_name(full_name)
+
+        # A single top level gauge with bucket labels tracks the values
+        self.gauge = Gauge(
+            self.name,
+            self.documentation,
+            registry=registry
+        )
+
+        roller_registry[self.name] = self
+
+    def get_sample(self):
+        """Returns (full_name, labels, value)
+        """
+        return self.counter.collect()[0].samples[0]
+
+    def collect(self):
+        now = datetime.datetime.now()
+
+        # Fetch value from counter
+        full_name, labels, value = self.get_sample()
+
+        # Add value
+        self.past_values.append((now, value))
+
+        # Drop old values
+        remove_old_values(self.past_values, now - self.retention_td)
+
+        # Calculate and record new rolled value
+        v = self.reducer(values_to_deltas(self.past_values), **self.reducer_kwargs)
+        self.gauge.set(v)
+
+
+class HistogramRoller(RollerBase):
+    """Accepts a Histogram object and creates a guage with multiple labels tracking bucket values over a given time period.
+    """
+    def __init__(self, histogram, options={}, registry=REGISTRY, roller_registry=ROLLER_REGISTRY):
+        self.hist = histogram
+        self.extract_options(options)
+
         # Keys are 'le' values
         # Holds deques containing values for each gauge
         self.past_values = dict()
-
-        generated_name = ""
         full_name = ""
         for full_name, labels, value in iter_hist_buckets(self.hist):
             le_label = labels['le']
             self.past_values[le_label] = deque()
 
-        generated_name = full_name[:-7] + '_%s_rolled' % (self.reducer_choice)
-        self.name = self.name or generated_name
-        self.documentation = self.documentation or 'Tracks the recent behavior of %s' % (full_name[0:-7])
+        self.configure_with_full_name(full_name, is_histogram=True)
 
         # A single top level gauge with bucket labels tracks the values
         self.gauge = Gauge(
@@ -167,6 +221,8 @@ class HistogramRoller(object):
         * Should only be called in 1 thread at a time.
         """
         now = datetime.datetime.now()
+
+        # Fetch values from histograms
         for full_name, labels, value in iter_hist_buckets(self.hist):
             sample_key = labels['le']
 

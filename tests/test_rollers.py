@@ -3,8 +3,8 @@ import unittest
 import datetime
 from collections import deque
 
-from prometheus_client import Histogram, REGISTRY, CollectorRegistry
-from prometheus_roller import HistogramRoller
+from prometheus_client import Histogram, Counter, REGISTRY, CollectorRegistry
+from prometheus_roller import HistogramRoller, CounterRoller
 from prometheus_roller.roller import sum_total, average, max_value, ema, remove_old_values
 
 
@@ -123,9 +123,45 @@ class TestHistogram(unittest.TestCase):
                         nchecks += 1
         self.assertTrue(nchecks > 0)
 
+class TestCounter(unittest.TestCase):
+
+    def setUp(self):
+        self.registry = CollectorRegistry()
+
+    def test_initialize(self):
+        c = Counter('test_value', 'Testing roller', registry=self.registry)
+        r = CounterRoller(c, registry=self.registry)
+
+        self.assertEqual(r.name, 'test_value_sum_rolled')
+
+    def test_collect(self):
+        c = Counter('test_value', 'Testing roller', registry=self.registry)
+        r = CounterRoller(c, registry=self.registry)
+
+        r.collect()
+        nchecks = 0
+        for m in self.registry.collect():
+            if m.name.endswith('sum_rolled'):
+                for name, labels, val in m.samples:
+                    self.assertEqual(val, 0.0)
+                    nchecks += 1
+        self.assertTrue(nchecks > 0)
+
+        c.inc()
+        c.inc(1.5)
+        r.collect()
+
+        nchecks = 0
+        for m in self.registry.collect():
+            if m.name.endswith('sum_rolled'):
+                for name, labels, val in m.samples:
+                    self.assertEqual(val, 2.5)
+                    nchecks += 1
+        self.assertTrue(nchecks > 0)
+
 
 class TestWindowing(unittest.TestCase):
-    def test_basic(self):
+    def test_remove_old_values(self):
         values = deque()
         for i in range(100):
             td = datetime.datetime.now() + datetime.timedelta(seconds=i+1-100)

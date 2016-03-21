@@ -6,21 +6,30 @@ Metrics like counters and histograms usually increase indefinitely, but you usua
 
 ## Usage
 
-    from prometheus_client import Histogram
-    from prometheus_roller import HistogramRoller, start_update_daemon
+    from prometheus_client import Histogram, Counter
+    from prometheus_roller import HistogramRoller, CounterRoller, start_update_daemon
 
     # Create a histogram
     h = Histogram('test_value', 'Testing roller')
 
-    # Create a roller for this histogram, which calculates windowed values
+    # Create a counter
+    c = Counter('test_counted_value', 'Testing roller')
+
+    # Create a roller for the histogram, which calculates windowed values
     # By default it will create a gauge with a label for each histogram bin
     # The value of each gauge will be the change in value over the last 5 minutes, calculated every 5 seconds
     # See the `options` parameter for more configuration options
-    r = HistogramRoller(h)
+    rh = HistogramRoller(h)
+
+    # Create a roller for the counter, which calculates windowed values
+    # The value of each gauge will be the change in value over the last 5 minutes, calculated every 5 seconds
+    # See the `options` parameter for more configuration options
+    rc = CounterRoller(c)
 
     # Launch a daemon thread tracking and updating all roller objects
     # See the code for more options for configuring this update process
     start_update_daemon()
+
 
 ## Installation
 
