@@ -6,8 +6,21 @@ Metrics like counters and histograms usually increase indefinitely, but you usua
 
 ## Usage
 
+    from prometheus_client import Histogram
+    from prometheus_roller import HistogramRoller, start_update_daemon
+
+    # Create a histogram
     h = Histogram('test_value', 'Testing roller')
+
+    # Create a roller for this histogram, which calculates windowed values
+    # By default it will create a gauge with a label for each histogram bin
+    # The value of each gauge will be the change in value over the last 5 minutes, calculated every 5 seconds
+    # See the `options` parameter for more configuration options
     r = HistogramRoller(h)
+
+    # Launch a daemon thread tracking and updating all roller objects
+    # See the code for more options for configuring this update process
+    start_update_daemon()
 
 ## Installation
 
@@ -21,28 +34,6 @@ Metrics like counters and histograms usually increase indefinitely, but you usua
 
     python -m unittest discover
 
-
 ## TODO
 
-Add function to find all 'rollers' and manage them in daemon thread
-
-Add options
-
-Add better tests
-
-Make pip installable
-
-Several types of roll ups
-
-* moving averages
-* rates
-* IQRs
-* max-over-period values
-
-## Author
-
-Timothy Van Heest
-
-## License
-
-MIT
+* Add IQR reducer

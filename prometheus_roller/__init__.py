@@ -9,3 +9,4 @@ from . import updater
 HistogramRoller = roller.HistogramRoller
 
 start_update_daemon = updater.start_update_daemon
+PrometheusRollingMetricsUpdater = updater.PrometheusRollingMetricsUpdater

@@ -105,7 +105,7 @@ REDUCERS = {
 ##########
 
 DEFAULT_UPDATE_PERIOD = 5           # every 5 seconds
-DEFAULT_RETENSION_PERIOD = 5*60     # last 5 minutes
+DEFAULT_RETENTION_PERIOD = 5*60     # last 5 minutes
 
 class HistogramRoller(object):
     """Accepts a Histogram object and creates gauges tracking metrics over a given time period for that bucket.
@@ -118,8 +118,11 @@ class HistogramRoller(object):
         # Name and documentation are generated if not passed
         self.name = options.get('name')
         self.documentation = options.get('documentation')
-        self.retention_seconds = options.get('retention_seconds', DEFAULT_UPDATE_PERIOD)
-        self.update_seconds = options.get('update_seconds', DEFAULT_RETENSION_PERIOD)
+        self.retention_seconds = options.get('retention_seconds', DEFAULT_RETENTION_PERIOD)
+        self.update_seconds = options.get('update_seconds', DEFAULT_UPDATE_PERIOD)
+
+        if self.update_seconds % 1 != 0:
+            raise ValueError("'update_seconds' must be a multiple of 1")
 
         # By default, values are differences over a fixed window
         self.reducer_choice = options.get('reducer', 'sum')
