@@ -55,5 +55,5 @@ This isn't very useful if you're using [the prometheus server](https://github.co
 * Add IQR reducer
 * Add more tests for edge cases
 * Tag version and upload to pypi
-* python 3 support
+
 

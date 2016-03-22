@@ -1,8 +1,10 @@
+from __future__ import division, print_function
+
 import time
 import threading
 from threading import Lock
 from fractions import gcd
-from roller import HistogramRoller, ROLLER_REGISTRY
+from .roller import HistogramRoller, ROLLER_REGISTRY
 
 # Don't wait longer than every 30 seconds in between checks
 MAX_WAIT_PERIOD = 30
@@ -22,9 +24,14 @@ class PrometheusRollingMetricsUpdater(threading.Thread):
     def update_wait_period(self):
         """Calculate the longest interval we can wait.
         """
-        periods = map(lambda r: r.update_seconds, self.rollers)
+        periods = [r.update_seconds for r in self.rollers]
         if len(periods):
-            self.wait_period = min(reduce(gcd, periods), MAX_WAIT_PERIOD)
+            for iperiod, period in enumerate(periods):
+                if iperiod == 0:
+                    self.wait_period = period
+                else:
+                    self.wait_period = gcd(period, self.wait_period)
+            self.wait_period = min(self.wait_period, MAX_WAIT_PERIOD)
         else:
             self.wait_period = MAX_WAIT_PERIOD
 

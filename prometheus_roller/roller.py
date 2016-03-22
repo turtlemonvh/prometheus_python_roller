@@ -1,3 +1,5 @@
+from __future__ import division, print_function
+
 import datetime
 from collections import deque
 from prometheus_client import Gauge, REGISTRY
