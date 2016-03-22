@@ -35,10 +35,12 @@ This isn't very useful if you're using [the prometheus server](https://github.co
 
 ## Installation
 
-    # To install with pip
-    pip install git+https://github.com/turtlemonvh/prometheus_python_roller.git#egg=prometheus_python_roller
+    # Install with pip
+    pip install prometheus_roller
 
-    # To install locally to work on it
+    # To install as editable to work on it
+    pip install -e git+https://github.com/turtlemonvh/prometheus_python_roller.git#egg=prometheus_python_roller
+    # OR
     git clone git@github.com:turtlemonvh/prometheus_python_roller.git prometheus-roller
     cd prometheus-roller
     python setup.py develop
