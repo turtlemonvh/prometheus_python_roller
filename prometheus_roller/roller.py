@@ -4,7 +4,7 @@ import datetime
 from collections import deque
 from prometheus_client import Gauge, REGISTRY
 
-# Keep track of rollers created by the user to make it simpler to use
+# Keep track of rollers created by the user
 ROLLER_REGISTRY = dict()
 
 
@@ -13,22 +13,25 @@ ROLLER_REGISTRY = dict()
 ##########
 
 def iter_hist_buckets(hist):
-    """Generator that returns buckets for a histogram"""
+    """Return buckets for a histogram as a generator
+    """
     for full_name, labels, value in hist.collect()[0].samples:
         if full_name.endswith("_bucket"):
             yield full_name, labels, value
 
-def remove_old_values(past_values, oldest_time):
+def remove_old_values(past_values, earliest_allowed_time):
+    """Remove old values from a deque containing (time, value) pairs
+    """
     while len(past_values):
         date_added, _ = past_values[0]
-        if date_added < oldest_time:
+        if date_added < earliest_allowed_time:
             v = past_values.popleft()
         else:
             break
 
 def values_to_deltas(past_values):
     """Turn a deque holding past gauge values into a list of deltas.
-    These should be evenly distributed in time
+    These should be evenly distributed in time.
     """
     deltas = []
     prev_val = None
@@ -160,13 +163,10 @@ class CounterRoller(RollerBase):
         options = options or {}
         self.extract_options(options)
 
-        # Keys are 'le' values
-        # Holds deques containing values for each gauge
         self.past_values = deque()
-        full_name, labels, value = self.get_sample()
+        full_name, _, _ = self.get_sample()
         self.configure_with_full_name(full_name)
 
-        # A single top level gauge with bucket labels tracks the values
         self.gauge = Gauge(
             self.name,
             self.documentation,
@@ -181,10 +181,12 @@ class CounterRoller(RollerBase):
         return self.counter.collect()[0].samples[0]
 
     def collect(self):
+        """Update tracked counter values and current gauge value
+        """
         now = datetime.datetime.now()
 
         # Fetch value from counter
-        full_name, labels, value = self.get_sample()
+        _, _, value = self.get_sample()
 
         # Add value
         self.past_values.append((now, value))
@@ -213,7 +215,7 @@ class HistogramRoller(RollerBase):
         # Holds deques containing values for each gauge
         self.past_values = dict()
         full_name = ""
-        for full_name, labels, value in iter_hist_buckets(self.hist):
+        for full_name, labels, _ in iter_hist_buckets(self.hist):
             le_label = labels['le']
             self.past_values[le_label] = deque()
 
@@ -239,7 +241,7 @@ class HistogramRoller(RollerBase):
         now = datetime.datetime.now()
 
         # Fetch values from histograms
-        for full_name, labels, value in iter_hist_buckets(self.hist):
+        for _, labels, value in iter_hist_buckets(self.hist):
             sample_key = labels['le']
 
             # Add value

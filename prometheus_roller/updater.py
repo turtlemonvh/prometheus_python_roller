@@ -11,7 +11,7 @@ MAX_WAIT_PERIOD = 30
 
 
 class PrometheusRollingMetricsUpdater(threading.Thread):
-    """Track a list of rolling objects, updating values every 'max_update_frequency' seconds
+    """Thread used to periodically update a list of roller objects.
     """
     def __init__(self, **kwargs):
         super(PrometheusRollingMetricsUpdater, self).__init__()
@@ -38,11 +38,15 @@ class PrometheusRollingMetricsUpdater(threading.Thread):
         return self.wait_period
 
     def add(self, roller):
+        """Add a new roller to track.
+        """
         with self._lock:
             self.rollers.append(roller)
             self.update_wait_period()
 
     def remove(self, roller):
+        """Stop tracking a roller.
+        """
         idx = -1
         with self._lock:
             for ir, r in enumerate(self.rollers):
@@ -53,6 +57,9 @@ class PrometheusRollingMetricsUpdater(threading.Thread):
             self.update_wait_period()
 
     def run(self):
+        """Run forever, executing any updates that need to take place and then sleeping
+        until the next update time.
+        """
         while True:
             now_second = int(time.time())
             with self._lock:
