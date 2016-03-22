@@ -1,7 +1,9 @@
 import os
+from codecs import open
 from setuptools import setup
 
-with open('README.md') as f:
+BASE_PATH = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(BASE_PATH, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(

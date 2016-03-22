@@ -1,5 +1,5 @@
 build
-dict
+dist
 *.pyc
 *.egg*
 .coverage
