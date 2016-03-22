@@ -49,6 +49,26 @@ class TestHistogram(unittest.TestCase):
 
         self.assertEqual(roller.name, 'test_value_sum_rolled')
 
+    def test_initialize_errors(self):
+        # Raise error because tried to use wrong type of item
+        with self.assertRaises(ValueError):
+            c = Counter('test_value', 'Testing roller', registry=self.registry)
+            roller = HistogramRoller(c, registry=self.registry)
+
+        # Update seconds must be > 0
+        with self.assertRaises(ValueError):
+            c = Histogram('test_value', 'Testing roller', registry=self.registry)
+            roller = HistogramRoller(c, registry=self.registry, options={
+                'update_seconds': 0
+            })
+
+        # Update seconds must be a multiple of 1
+        with self.assertRaises(ValueError):
+            c = Histogram('test_value', 'Testing roller', registry=self.registry)
+            roller = HistogramRoller(c, registry=self.registry, options={
+                'update_seconds': 2.5
+            })
+
     def test_collect(self):
         h = Histogram('test_value', 'Testing roller', registry=self.registry)
         roller = HistogramRoller(h, registry=self.registry)
@@ -133,6 +153,26 @@ class TestCounter(unittest.TestCase):
         r = CounterRoller(c, registry=self.registry)
 
         self.assertEqual(r.name, 'test_value_sum_rolled')
+
+    def test_initialize_errors(self):
+        # Raise error because tried to use wrong type of item
+        with self.assertRaises(ValueError):
+            h = Histogram('test_value', 'Testing roller', registry=self.registry)
+            roller = CounterRoller(h, registry=self.registry)
+
+        # Update seconds must be > 0
+        with self.assertRaises(ValueError):
+            c = Counter('test_value', 'Testing roller', registry=self.registry)
+            roller = CounterRoller(c, registry=self.registry, options={
+                'update_seconds': 0
+            })
+
+        # Update seconds must be a multiple of 1
+        with self.assertRaises(ValueError):
+            c = Counter('test_value', 'Testing roller', registry=self.registry)
+            roller = CounterRoller(c, registry=self.registry, options={
+                'update_seconds': 2.5
+            })
 
     def test_collect(self):
         c = Counter('test_value', 'Testing roller', registry=self.registry)

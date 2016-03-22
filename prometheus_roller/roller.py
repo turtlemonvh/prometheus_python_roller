@@ -120,6 +120,9 @@ class RollerBase(object):
         self.retention_seconds = options.get('retention_seconds', DEFAULT_RETENTION_PERIOD)
         self.update_seconds = options.get('update_seconds', DEFAULT_UPDATE_PERIOD)
 
+        if self.update_seconds < 1:
+            raise ValueError("'update_seconds' must be > 0")
+
         if self.update_seconds % 1 != 0:
             raise ValueError("'update_seconds' must be a multiple of 1")
 
