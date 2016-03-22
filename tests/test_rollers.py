@@ -51,23 +51,26 @@ class TestHistogram(unittest.TestCase):
 
     def test_initialize_errors(self):
         # Raise error because tried to use wrong type of item
-        with self.assertRaises(ValueError):
+        def wrong_type_exception():
             c = Counter('test_value', 'Testing roller', registry=self.registry)
             roller = HistogramRoller(c, registry=self.registry)
+        self.assertRaises(ValueError, wrong_type_exception)
 
         # Update seconds must be > 0
-        with self.assertRaises(ValueError):
-            c = Histogram('test_value', 'Testing roller', registry=self.registry)
-            roller = HistogramRoller(c, registry=self.registry, options={
+        def update_seconds_lt_1_exception():
+            h = Histogram('test_value', 'Testing roller', registry=self.registry)
+            roller = HistogramRoller(h, registry=self.registry, options={
                 'update_seconds': 0
             })
+        self.assertRaises(ValueError, update_seconds_lt_1_exception)
 
         # Update seconds must be a multiple of 1
-        with self.assertRaises(ValueError):
-            c = Histogram('test_value', 'Testing roller', registry=self.registry)
-            roller = HistogramRoller(c, registry=self.registry, options={
+        def update_seconds_not_divisible_by_1_exception():
+            h = Histogram('test_value', 'Testing roller', registry=self.registry)
+            roller = HistogramRoller(h, registry=self.registry, options={
                 'update_seconds': 2.5
             })
+        self.assertRaises(ValueError, update_seconds_not_divisible_by_1_exception)
 
     def test_collect(self):
         h = Histogram('test_value', 'Testing roller', registry=self.registry)
@@ -174,23 +177,26 @@ class TestCounter(unittest.TestCase):
 
     def test_initialize_errors(self):
         # Raise error because tried to use wrong type of item
-        with self.assertRaises(ValueError):
+        def wrong_type_exception():
             h = Histogram('test_value', 'Testing roller', registry=self.registry)
             roller = CounterRoller(h, registry=self.registry)
+        self.assertRaises(ValueError, wrong_type_exception)
 
         # Update seconds must be > 0
-        with self.assertRaises(ValueError):
+        def update_seconds_lt_1_exception():
             c = Counter('test_value', 'Testing roller', registry=self.registry)
             roller = CounterRoller(c, registry=self.registry, options={
                 'update_seconds': 0
             })
+        self.assertRaises(ValueError, update_seconds_lt_1_exception)
 
         # Update seconds must be a multiple of 1
-        with self.assertRaises(ValueError):
+        def update_seconds_not_divisible_by_1_exception():
             c = Counter('test_value', 'Testing roller', registry=self.registry)
             roller = CounterRoller(c, registry=self.registry, options={
                 'update_seconds': 2.5
             })
+        self.assertRaises(ValueError, update_seconds_not_divisible_by_1_exception)
 
     def test_collect(self):
         c = Counter('test_value', 'Testing roller', registry=self.registry)
