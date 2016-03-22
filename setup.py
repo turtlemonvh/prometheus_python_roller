@@ -1,12 +1,16 @@
 import os
 from setuptools import setup
 
+with open('README.md') as f:
+    long_description = f.read()
+
 setup(
     name = "prometheus_roller",
     version = "0.0.1",
     author = "Timothy Van Heest",
     author_email = "timothy@ionic.com",
     description = ("Library for aggregating metrics from the Prometheus monitoring system's python client library."),
+    long_description=long_description,
     license = "MIT",
     keywords = "prometheus monitoring client metrics",
     url = "https://github.com/turtlemonvh/prometheus_python_roller",
