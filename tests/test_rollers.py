@@ -5,7 +5,7 @@ from collections import deque
 
 from prometheus_client import Histogram, Counter, REGISTRY, CollectorRegistry
 from prometheus_roller import HistogramRoller, CounterRoller
-from prometheus_roller.roller import sum_total, average, max_value, ema, remove_old_values
+from prometheus_roller.roller import sum_total, average, min_value, max_value, ema, remove_old_values
 
 
 class TestHistogram(unittest.TestCase):
@@ -119,10 +119,18 @@ class TestHistogram(unittest.TestCase):
             'reducer': 'sum'
         })
 
+        def always_one(*args, **kwargs):
+            return 1
+        roller_one = HistogramRoller(h, registry=self.registry, options={
+            'reducer': always_one
+        })
+
+
         for state in [2.6, 4.7, 3.8, 2.8]:
             h.observe(state)
             roller_max.collect()
             roller_min.collect()
+            roller_one.collect()
 
         # Deltas = 1, 1, 1
         nchecks = 0
@@ -142,6 +150,16 @@ class TestHistogram(unittest.TestCase):
                         self.assertEqual(val, 3.0)
                         nchecks += 1
         self.assertTrue(nchecks > 0)
+
+        nchecks = 0
+        for m in self.registry.collect():
+            if m.name.endswith('always_one_rolled'):
+                for name, labels, val in m.samples:
+                    if labels['le'] == '5.0':
+                        self.assertEqual(val, 1.0)
+                        nchecks += 1
+        self.assertTrue(nchecks > 0)
+
 
 class TestCounter(unittest.TestCase):
 
@@ -201,6 +219,7 @@ class TestCounter(unittest.TestCase):
 
 
 class TestWindowing(unittest.TestCase):
+
     def test_remove_old_values(self):
         values = deque()
         for i in range(100):
@@ -214,6 +233,7 @@ class TestWindowing(unittest.TestCase):
 
 
 class TestReducers(unittest.TestCase):
+
     def setUp(self):
         # Empty
         self.d0 = []
@@ -234,6 +254,11 @@ class TestReducers(unittest.TestCase):
         self.assertEqual(average(self.d0), 0.0)
         self.assertEqual(average(self.d1), 5.0)
         self.assertEqual(average(self.d2), 17.0/8)
+
+    def test_min(self):
+        self.assertEqual(min_value(self.d0), float('inf'))
+        self.assertEqual(min_value(self.d1), 5.0)
+        self.assertEqual(min_value(self.d2), 1.0)
 
     def test_max(self):
         self.assertEqual(max_value(self.d0), float('-inf'))

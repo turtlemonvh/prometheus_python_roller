@@ -96,7 +96,7 @@ def min_value(deltas, **kwargs):
 REDUCERS = {
     'sum': sum_total,
     'avg': average,
-    'max': max_value, 
+    'max': max_value,
     'min': min_value,
     'ema': ema
 }
@@ -134,6 +134,7 @@ class RollerBase(object):
         # 'reducer_choice' can be a function that accepts a list of float deltas and returns a float
         if hasattr(self.reducer_choice, '__call__'):
             self.reducer = self.reducer_choice
+            self.reducer_choice = self.reducer.__name__
         else:
             self.reducer = REDUCERS[self.reducer_choice]
 
@@ -144,17 +145,19 @@ class RollerBase(object):
         trimmed_name = full_name[:-7] if is_histogram else full_name
         generated_name = trimmed_name + '_%s_rolled' % (self.reducer_choice)
         self.name = self.name or generated_name
-        self.documentation = self.documentation or 'Tracks the recent behavior of %s' % (trimmed_name)
+        self.documentation = self.documentation or \
+            'Tracks the recent behavior of %s' % (trimmed_name)
 
 
 class CounterRoller(RollerBase):
     """Accepts a Counter object and creates a gauge tracking its value over a given time period.
     """
-    def __init__(self, counter, options={}, registry=REGISTRY, roller_registry=ROLLER_REGISTRY):
+    def __init__(self, counter, options=None, registry=REGISTRY, roller_registry=ROLLER_REGISTRY):
         self.counter = counter
         if self.counter._type != 'counter':
             raise ValueError('Only a Counter object should be passed to CounterRoller')
 
+        options = options or {}
         self.extract_options(options)
 
         # Keys are 'le' values
@@ -195,13 +198,15 @@ class CounterRoller(RollerBase):
 
 
 class HistogramRoller(RollerBase):
-    """Accepts a Histogram object and creates a guage with multiple labels tracking bucket values over a given time period.
+    """Accepts a Histogram object and creates a guage with multiple labels tracking bucket values
+    over a given time period.
     """
-    def __init__(self, histogram, options={}, registry=REGISTRY, roller_registry=ROLLER_REGISTRY):
+    def __init__(self, histogram, options=None, registry=REGISTRY, roller_registry=ROLLER_REGISTRY):
         self.hist = histogram
         if self.hist._type != 'histogram':
             raise ValueError('Only a Histogram object should be passed to HistogramRoller')
 
+        options = options or {}
         self.extract_options(options)
 
         # Keys are 'le' values
@@ -218,7 +223,7 @@ class HistogramRoller(RollerBase):
         self.gauge = Gauge(
             self.name,
             self.documentation,
-            labelnames=('le',), 
+            labelnames=('le',),
             registry=registry
         )
 

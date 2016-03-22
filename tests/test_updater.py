@@ -6,6 +6,7 @@ from prometheus_roller.updater import MAX_WAIT_PERIOD
 
 
 class TestRollingUpdater(unittest.TestCase):
+
     def setUp(self):
         self.registry = CollectorRegistry()
         self.roller_registry = {}
@@ -14,10 +15,8 @@ class TestRollingUpdater(unittest.TestCase):
         h_a = Histogram('test_value_a', 'Testing roller a', registry=self.registry)
         h_b = Histogram('test_value_b', 'Testing roller b', registry=self.registry)
 
-        rr = dict()
         r_a = HistogramRoller(h_a, registry=self.registry, roller_registry=self.roller_registry)
         r_b = HistogramRoller(h_b, registry=self.registry, roller_registry=self.roller_registry)
-
 
         t = start_update_daemon(roller_registry=self.roller_registry)
 
@@ -26,13 +25,13 @@ class TestRollingUpdater(unittest.TestCase):
     def test_wait_period(self):
         h_a = Histogram('test_value_a', 'Testing roller a', registry=self.registry)
         h_b = Histogram('test_value_b', 'Testing roller b', registry=self.registry)
+        h_c = Histogram('test_value_c', 'Testing roller c', registry=self.registry)
 
-        rr = dict()
         r_a = HistogramRoller(h_a, registry=self.registry, roller_registry=self.roller_registry)
         r_b = HistogramRoller(h_b, registry=self.registry, roller_registry=self.roller_registry, options={
             'update_seconds': 10
         })
-        r_c = HistogramRoller(h_b, registry=self.registry, roller_registry=self.roller_registry, options={
+        r_c = HistogramRoller(h_c, registry=self.registry, roller_registry=self.roller_registry, options={
             'update_seconds': 2   
         })
 
@@ -57,3 +56,9 @@ class TestRollingUpdater(unittest.TestCase):
         t.remove(r_a)
         self.assertEqual(len(t.rollers), 2)
         self.assertEqual(t.wait_period, 2)
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+

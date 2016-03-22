@@ -48,7 +48,12 @@ This isn't very useful if you're using [the prometheus server](https://github.co
 
 ## Running tests
 
+    # Plain old python
     python -m unittest discover
+
+    # If you have nose and coverage installed
+    nosetests --with-cover
+
 
 ## TODO
 

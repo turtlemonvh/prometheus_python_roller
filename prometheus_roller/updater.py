@@ -4,7 +4,7 @@ import time
 import threading
 from threading import Lock
 from fractions import gcd
-from .roller import HistogramRoller, ROLLER_REGISTRY
+from .roller import ROLLER_REGISTRY
 
 # Don't wait longer than every 30 seconds in between checks
 MAX_WAIT_PERIOD = 30
