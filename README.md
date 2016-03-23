@@ -1,4 +1,10 @@
-# Prometheus Roller [![Build Status](https://travis-ci.org/turtlemonvh/prometheus_python_roller.png?branch=master)](https://travis-ci.org/turtlemonvh/prometheus_python_roller)
+# Prometheus Roller
+[![Build Status](https://travis-ci.org/turtlemonvh/prometheus_python_roller.png?branch=master)](https://travis-ci.org/turtlemonvh/prometheus_python_roller)
+[![PyPI version](https://img.shields.io/pypi/v/prometheus_roller.svg)](https://pypi.python.org/pypi/prometheus_roller)
+[![Downloads](http://img.shields.io/pypi/dm/prometheus_roller.svg)](https://pypi.python.org/pypi/prometheus_roller)
+[![Python versions](https://img.shields.io/pypi/pyversions/prometheus_roller.svg)](https://pypi.python.org/pypi/prometheus_roller)
+[![License](https://img.shields.io/pypi/l/prometheus_roller.svg)](https://pypi.python.org/pypi/prometheus_roller)
+
 
 This is a small helper utility for creating time-boxed rollups for histogram and counter metrics created using the [prometheus python client](https://github.com/prometheus/client_python).
 
