@@ -1,14 +1,14 @@
 import os
-from codecs import open
+import codecs
 from setuptools import setup
 
 BASE_PATH = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(BASE_PATH, 'README.md'), encoding='utf-8') as f:
+with codecs.open(os.path.join(BASE_PATH, 'README.md'), 'r') as f:
     long_description = f.read()
 
 setup(
     name = "prometheus_roller",
-    version = "0.0.1",
+    version = "0.0.2",
     author = "Timothy Van Heest",
     author_email = "timothy@ionic.com",
     description = ("Library for aggregating metrics from the Prometheus monitoring system's python client library."),

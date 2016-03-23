@@ -14,56 +14,59 @@ This isn't very useful if you're using [the prometheus server](https://github.co
 
 ## Usage
 
-    from prometheus_client import Histogram, Counter
-    from prometheus_roller import HistogramRoller, CounterRoller, start_update_daemon
+```python
+from prometheus_client import Histogram, Counter
+from prometheus_roller import HistogramRoller, CounterRoller, start_update_daemon
 
-    # Create a histogram
-    h = Histogram('test_value', 'Testing roller')
+# Create a histogram
+h = Histogram('test_value', 'Testing roller')
 
-    # Create a counter
-    c = Counter('test_counted_value', 'Testing roller')
+# Create a counter
+c = Counter('test_counted_value', 'Testing roller')
 
-    # Create a roller for the histogram, which calculates windowed values.
-    # By default it will create a gauge with a label for each histogram bin.
-    # The value of each gauge will be the change in value over the last 5 minutes, updated every 5 seconds.
-    # See the `options` parameter for more configuration options.
-    rh = HistogramRoller(h)
+# Create a roller for the histogram, which calculates windowed values.
+# By default it will create a gauge with a label for each histogram bin.
+# The value of each gauge will be the change in value over the last 5 minutes, updated every 5 seconds.
+# See the `options` parameter for more configuration options.
+rh = HistogramRoller(h)
 
-    # Create a roller for the counter, which calculates windowed values.
-    # The value of each gauge will be the change in value over the last 5 minutes, updated every 5 seconds.
-    # See the `options` parameter for more configuration options.
-    rc = CounterRoller(c)
+# Create a roller for the counter, which calculates windowed values.
+# The value of each gauge will be the change in value over the last 5 minutes, updated every 5 seconds.
+# See the `options` parameter for more configuration options.
+rc = CounterRoller(c)
 
-    # Launch a daemon thread tracking and updating all roller objects.
-    # See the code for more options for configuring this update process.
-    start_update_daemon()
-
+# Launch a daemon thread tracking and updating all roller objects.
+# See the code for more options for configuring this update process.
+start_update_daemon()
+```
 
 ## Installation
 
-    # Install with pip
-    pip install prometheus_roller
+```bash
+# Install with pip
+pip install prometheus_roller
 
-    # To install as editable to work on it
-    pip install -e git+https://github.com/turtlemonvh/prometheus_python_roller.git#egg=prometheus_python_roller
-    # OR
-    git clone git@github.com:turtlemonvh/prometheus_python_roller.git prometheus-roller
-    cd prometheus-roller
-    python setup.py develop
-
+# To install as editable to work on it
+pip install -e git+https://github.com/turtlemonvh/prometheus_python_roller.git#egg=prometheus_python_roller
+# OR
+git clone git@github.com:turtlemonvh/prometheus_python_roller.git prometheus-roller
+cd prometheus-roller
+python setup.py develop
+```
 
 ## Running tests
 
-    # Plain old python
-    python -m unittest discover
+```bash
+# Plain old python
+python -m unittest discover
 
-    # If you have nose and coverage installed
-    nosetests --with-cover
-
+# If you have nose and coverage installed
+nosetests --with-cover
+```
 
 ## TODO
 
 * Add IQR reducer
-* Tag version and upload to pypi
+
 
 
